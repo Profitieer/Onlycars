@@ -1,0 +1,235 @@
+* {
+    box-sizing: border-box;
+}
+html,body {
+    margin: 0;
+    padding: 0;
+}
+textarea {
+    resize: none;
+}
+
+body {
+    background-color: #EDEDE9;
+}
+
+header {
+    background-image: url(kuvat/medatsun-jdm-240z-52-3440x1440.jpg);
+    background-repeat: no-repeat;
+    width: 100%;
+    height: 500px;
+    background-size: cover;
+    background-position: center;
+}
+
+#navbar {
+    background-color: #f5ebe042;
+    width: 30%;
+    border-top-right-radius: 30px;
+    transform: translateY(200px);
+    height: 300px;
+    width: 700px;
+    box-shadow: 10px -10px 20px white;
+    outline: auto;
+    outline-color: #EDEDE9;
+    outline-style: solid;
+}
+
+#nav {
+    transform: translateY(20px);
+}
+
+#nav h1 {
+    font-size: 5em;
+    color:  white;
+    font-family: "Caveat", cursive;
+    transform: translateY(15px) translateX(170px);
+    text-shadow: 7px 7px #D5BDAF;
+}
+
+#list {
+    display: flex;
+    flex-direction: row;
+    gap: 60px;
+}
+
+#list a {
+    text-decoration: none;
+    color: white;
+    font-family: "Bitcount Prop Single", system-ui;
+    font-size: 1.5em;
+    padding: 10px;
+    width: 200px;
+    text-align: center;
+    text-shadow: 1px 1px 1px rgb(18, 17, 17);
+    border-radius: 20px;
+    transform: translateX(50px);
+    background-color: rgba(213, 189, 175, 0.295)
+}
+
+#list a:hover {
+    background-color: #D5BDAF;
+    transform: scale(1.1) translateX(50px);
+}
+
+.backgroundposts{
+    display: flex;
+    justify-self: center;
+    background-color: #D5BDAF;
+    width: 1000px;
+    justify-content: center;
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 12px 12px 4px #E3D5CA;
+}
+
+.post h2 {
+    font-family: "Caveat", cursive;
+    font-size: 40px;
+    text-shadow: 2px 2px 1px #EDEDE9;
+}
+.post p {
+    font-family: "Bitcount Prop Single", system-ui;
+    font-size: 1.3em;
+    font-weight: bolder;
+    text-shadow: 2px 2px 1px #EDEDE9;
+}
+
+.post img {
+    border-radius: 10px;
+    height: 300px;
+    width: 600px;
+}
+
+.post a {
+    margin-right: 30px;
+    color: black;
+    text-decoration: none;
+}
+.post a:hover {
+    text-decoration: underline;
+    color: rgb(54, 54, 54);
+}
+
+.backgroundpostscreate {
+    display: flex;
+    justify-self: center;
+    justify-content: center;
+    background-color: #D5BDAF;
+    width: 700px;
+    height: 700px;
+    margin-bottom: 30px;
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 12px 12px 4px #E3D5CA;
+}
+
+.postcreate input {
+    outline: none;
+    border: none;
+    padding: 10px;
+    transform: translateX(10px);
+    font-size: 1em;
+}
+
+.postcreate textarea {
+    outline: none;
+    border: none;
+    height: 100px;
+    transform: translateY(10px) translateX(10px);
+    font-size: 1em;
+}
+
+.postcreate {
+    font-family: "Bitcount Prop Single", system-ui;
+    font-size: 1.5em;
+    font-weight: bolder;
+}
+
+.postcreate #submit {
+    background-color: #D5BDAF;
+    border: none;
+    font-size: 1em;
+    padding: 10px;
+    padding: 15px;
+    font-family: "Bitcount Prop Single", system-ui;
+    font-weight: bold;
+}
+.postcreate #submit:hover {
+    background-color: #E3D5CA;
+    border-radius: 10px;
+    
+}
+
+#post_edit {
+    font-family: "Bitcount Prop Single", system-ui;
+    font-weight: bolder;
+    font-size: 1.1em;
+}
+#edit_post_background {
+    display: flex;
+    justify-self: center;
+    justify-content: center;
+    background-color: #D5BDAF;
+    width: 700px;
+    height: 900px;
+    margin-bottom: 30px;
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 12px 12px 4px #E3D5CA;
+}
+#post_edit input {
+    outline: none;
+    border: none;
+    padding: 10px;
+    transform: translateX(10px);
+    font-size: 1em;
+}
+#post_edit textarea{
+    outline: none;
+    border: none;
+    height: 100px;
+    transform: translateY(10px) translateX(10px);
+    font-size: 1em;
+}
+#post_edit #päivitä {
+    background-color: #D5BDAF;
+    border: none;
+    font-size: 1.3em;
+    width: 100px;
+    padding: 15px;
+    font-family: "Bitcount Prop Single", system-ui;
+    font-weight: bold;
+}
+#post_edit #päivitä:hover {
+    background-color: #E3D5CA;
+    border-radius: 10px;
+}
+
+#post_delete_background {
+    background-color: #D5BDAF;
+    width: 500px;
+    padding: 10px;
+    border-radius: 10px;
+    margin-left: 10px;
+    margin-top: 10px;
+    font-family: "Bitcount Prop Single", system-ui;
+    font-weight: bold;
+    font-size: 1.4em;
+}
+#delete_submit {
+    background-color: #D5BDAF;
+    border: none;
+    font-size: 1em;
+    width: 100px;
+    padding: 15px;
+    font-family: "Bitcount Prop Single", system-ui;
+    font-weight: bold;
+}
+#delete_submit:hover {
+    background-color: #E3D5CA;
+    border-radius: 10px;
+}
