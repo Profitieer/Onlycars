@@ -5,12 +5,15 @@ $username = "root";
 $password = "";
 $dbname = "onlycars";
 
-$conn = mysqli_connect( $servername, $username, $password, $dbname );
+$mysqli = new mysqli(
+    $servername,
+    $username,
+    $password,
+    $dbname
+);
 
-
-
-if (!$conn) {
-    die("Yhteys epäonnistui." . mysqli_connect_error());
+if ($mysqli->connect_error) {
+    die("Database connection failed: " . $mysqli->connect_error);
 }
-?>
 
+return $mysqli;

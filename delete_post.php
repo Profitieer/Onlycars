@@ -54,7 +54,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
      */
     $sql = "SELECT image FROM posts WHERE id = ?";
 
-    $stmt = mysqli_prepare($conn, $sql);
+    $stmt = mysqli_prepare($mysqli, $sql);
     mysqli_stmt_bind_param($stmt, "i", $id);
     mysqli_stmt_execute($stmt);
 
@@ -69,7 +69,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
      */
     $sql = "DELETE FROM posts WHERE id = ?";
 
-    $stmt = mysqli_prepare($conn, $sql);
+    $stmt = mysqli_prepare($mysqli, $sql);
     mysqli_stmt_bind_param($stmt, "i", $id);
 
     if (mysqli_stmt_execute($stmt))

@@ -1,3 +1,40 @@
+<?php
+
+session_start();
+
+include "database.php";
+
+$user = null;
+
+// Check if user is logged in
+if (isset($_SESSION["user_id"])) {
+
+    $stmt = $mysqli->prepare(
+        "SELECT * FROM user WHERE id = ?"
+    );
+
+    $stmt->bind_param(
+        "i",
+        $_SESSION["user_id"]
+    );
+
+    $stmt->execute();
+
+    $user_result = $stmt->get_result();
+    $user = $user_result->fetch_assoc();
+}
+
+// Get posts
+$sql = "SELECT * FROM posts ORDER BY created_at DESC";
+$result = mysqli_query($mysqli, $sql);
+
+if (!$result) {
+    die("Post query failed: " . mysqli_error($mysqli));
+}
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,36 +56,17 @@
 
 <?php else: ?>
 
-        <p><a href="Account/login.php">Log in</a> or <a href="Account/signup.html">Sign up</a></p>
+        <p><a href="login.php">Log in</a> or <a href="signup.html">Sign up</a></p>
     
 <?php endif; ?>
 
-<?php
 
-include "database.php";
+
+<?php
 
 include "header.php";
 
-$sql = "SELECT * FROM posts ORDER BY created_at DESC"; 
-$result = mysqli_query($conn, $sql);
 
-session_start();
-
-if (isset($_SESSION["user_id"])) {
-
-    $mysqli = require __DIR__ . "/database.php";
-
-    $sql = "SELECT * FROM user
-            WHERE id = {$_SESSION["user_id"]}";
-
-    $result = $mysqli->query($sql);
-
-    $user = $result->fetch_assoc();
-
-}
-?>
-
-<?php
 // Check if there are any results
 if (mysqli_num_rows($result) > 0)
 {
@@ -81,6 +99,9 @@ if (mysqli_num_rows($result) > 0)
 
         <br><br>
 
+
+<?php if ($user !== null && $user["id"] == $row["user_id"]): ?>
+    
         <a id="post_changes1"
            href="edit_product.php?id=<?php echo $row["id"]; ?>">
             Muokkaa
@@ -90,6 +111,8 @@ if (mysqli_num_rows($result) > 0)
            href="delete_post.php?id=<?php echo $row["id"]; ?>">
             Poista
         </a>
+
+<?php endif; ?>
 
     </div>
 </div>

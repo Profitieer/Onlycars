@@ -1,4 +1,7 @@
+
 <?php
+
+session_start();
 
 include "database.php";
 
@@ -54,7 +57,7 @@ if (!in_array($mime, $allowedTypes)) {
 $sql = "INSERT INTO posts (author, brand, model, content, image)
         VALUES (?, ?, ?, ?, ?)";
 
-$stmt = mysqli_prepare($conn, $sql);
+$stmt = mysqli_prepare($mysqli, $sql);
 
 mysqli_stmt_bind_param(
     $stmt,

@@ -20,7 +20,7 @@ $id = $_GET["id"];
 
 // Get existing post
 $sql = "SELECT * FROM posts WHERE id = ?";
-$stmt = mysqli_prepare($conn, $sql);
+$stmt = mysqli_prepare($mysqli, $sql);
 mysqli_stmt_bind_param($stmt, "i", $id);
 mysqli_stmt_execute($stmt);
 
@@ -190,7 +190,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST")
                     image = ?
                 WHERE id = ?";
 
-        $stmt = mysqli_prepare($conn, $sql);
+        $stmt = mysqli_prepare($mysqli, $sql);
 
         mysqli_stmt_bind_param(
             $stmt,
