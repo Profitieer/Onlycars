@@ -4,7 +4,7 @@ $is_invalid = false;
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-    $mysqli = require __DIR__ . "/database.php";
+    $mysqli = require __DIR__ . "/database2.php";
 
     $sql = sprintf("SELECT * FROM user
                     WHERE email = '%s'",
@@ -24,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
             $_SESSION["user_id"] = $user["id"];
 
-            header("Location: index.php");
+            header("Location: /index.php");
             exit;
 
         }
@@ -42,7 +42,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+    <link href="/styles2.css" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single:wght@100..900&family=Caveat:wght@400..700&display=swap" rel="stylesheet">
+</head>
 </head>
 <body>
 
