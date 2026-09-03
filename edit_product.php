@@ -1,5 +1,47 @@
+<?php
+
+require_once __DIR__ . "/auth.php";
+require_login();
+
+$userId = (int) $user["id"];
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    verify_csrf_token();
+}
+
+// Check ownership before showing the form or processing any uploaded image.
+$row = get_owned_post($mysqli, $userId);
+$id = (int) $row["id"];
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $brand = required_post_text("brand");
+    $model = required_post_text("model");
+    $content = required_post_text("content");
+
+    require_once __DIR__ . "/post_images.php";
+    $imagePath = save_post_image($row["image"] ?? "");
+
+    // Keep the ownership condition in the UPDATE itself as well.
+    $sql = "UPDATE posts
+            SET brand = ?, model = ?, content = ?, image = ?
+            WHERE id = ? AND user_id = ?";
+
+    $stmt = $mysqli->prepare($sql);
+    $stmt->bind_param("ssssii", $brand, $model, $content, $imagePath, $id, $userId);
+    $stmt->execute();
+
+    if ($stmt->affected_rows > 0 && $imagePath !== $row["image"]) {
+        remove_unused_post_image($mysqli, $row["image"]);
+    }
+
+    header("Location: index.php");
+    exit;
+}
+
+?>
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,35 +54,20 @@
 <body>
 
 
-<?php
-
-include "database.php";
-
-$id = $_GET["id"];
-
-// Get existing post
-$sql = "SELECT * FROM posts WHERE id = ?";
-$stmt = mysqli_prepare($mysqli, $sql);
-mysqli_stmt_bind_param($stmt, "i", $id);
-mysqli_stmt_execute($stmt);
-
-$result = mysqli_stmt_get_result($stmt);
-$row = mysqli_fetch_assoc($result);
-
-include "header.php";
-
-?>
+<?php include "header.php"; ?>
 
 <div id="edit_post_background">
 
 <form id="post_edit" method="post" enctype="multipart/form-data">
 
-<h1> Julkaisun Muokkaus </h1>
+<h1>Julkaisun muokkaus</h1>
+
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
 
     Nimi<input
         class="author"
         type="text"
-        name="author"
+        readonly
         value="<?php echo htmlspecialchars($row["author"]); ?>"
     >
 
@@ -50,6 +77,7 @@ include "header.php";
         class="brand"
         type="text"
         name="brand"
+        required
         value="<?php echo htmlspecialchars($row["brand"]); ?>"
     >
 
@@ -59,6 +87,7 @@ include "header.php";
         class="model"
         type="text"
         name="model"
+        required
         value="<?php echo htmlspecialchars($row["model"]); ?>"
     >
 
@@ -67,6 +96,7 @@ include "header.php";
     Julkaisu<textarea
         class="content"
         name="content"
+        required
     ><?php echo htmlspecialchars($row["content"]); ?></textarea>
 
     <br><br>
@@ -93,7 +123,7 @@ include "header.php";
     <input
         type="file"
         name="image"
-        accept="image/*"
+        accept="image/jpeg,image/png,image/gif,image/webp"
     >
 
     <input
@@ -114,111 +144,6 @@ include "header.php";
 </form>
 
 </div>
-
-<?php
-
-if ($_SERVER["REQUEST_METHOD"] == "POST")
-{
-    $id = $_POST["id"];
-    $author = trim($_POST["author"]);
-    $brand = trim($_POST["brand"]);
-    $model = trim($_POST["model"]);
-    $content = trim($_POST["content"]);
-
-    // Check required fields
-    if (empty($author) || empty($brand) || empty($model) || empty($content))
-    {
-        echo "Täytä kaikki kentät.";
-    }
-    else
-    {
-        /*
-         * Keep the existing image by default.
-         */
-        $imagePath = $row["image"];
-
-        /*
-         * Check if a new image was uploaded.
-         */
-        if (isset($_FILES["image"]) && $_FILES["image"]["error"] === UPLOAD_ERR_OK)
-        {
-            $uploadDir = "kuvat/";
-
-            if (!is_dir($uploadDir))
-            {
-                mkdir($uploadDir, 0755, true);
-            }
-
-            // Get file extension
-            $extension = strtolower(
-                pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION)
-            );
-
-            // Allowed extensions
-            $allowed = ["jpg", "jpeg", "png", "gif", "webp"];
-
-            if (!in_array($extension, $allowed))
-            {
-                die("Invalid image type.");
-            }
-
-            // Create new filename
-            $filename = uniqid("", true) . "." . $extension;
-
-            $newImagePath = $uploadDir . $filename;
-
-            // Move uploaded image
-            if (move_uploaded_file(
-                $_FILES["image"]["tmp_name"],
-                $newImagePath
-            ))
-            {
-                $imagePath = $newImagePath;
-            }
-            else
-            {
-                die("Failed to upload image.");
-            }
-        }
-
-        // Update post
-        $sql = "UPDATE posts
-                SET author = ?,
-                    brand = ?,
-                    model = ?,
-                    content = ?,
-                    image = ?
-                WHERE id = ?";
-
-        $stmt = mysqli_prepare($mysqli, $sql);
-
-        mysqli_stmt_bind_param(
-            $stmt,
-            "sssssi",
-            $author,
-            $brand,
-            $model,
-            $content,
-            $imagePath,
-            $id
-        );
-
-        if (mysqli_stmt_execute($stmt))
-        {
-            echo "Julkaisu päivitettiin onnistuneesti.";
-
-            echo "<script>
-                    window.location.href = 'index.php';
-                  </script>";
-        }
-        else
-        {
-            echo "Julkaisun päivittäminen epäonnistui.";
-        }
-    }
-}
-
-?>
 
 </body>
 </html>

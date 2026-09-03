@@ -1,79 +1,31 @@
-
 <?php
 
-session_start();
+require_once __DIR__ . "/auth.php";
+require_login();
 
-include "database.php";
-
-$author = $_POST["author"];
-$brand = $_POST["brand"];
-$model = $_POST["model"];
-$content = $_POST["content"];
-
-$imagePath = "";
-
-if (isset($_FILES["image"]) && $_FILES["image"]["error"] === 0) {
-
-    $uploadDir = "kuvat/";
-
-    // Make sure the folder exists
-    if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0755, true);
-    }
-
-    // Get file extension
-    $extension = strtolower(
-        pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION)
-    );
-
-    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    $mime = finfo_file($finfo, $_FILES["image"]["tmp_name"]);
-    finfo_close($finfo);
-
-    $allowedTypes = [
-    "image/jpeg",
-    "image/png",
-    "image/gif",
-    "image/webp"
-    ];
-
-if (!in_array($mime, $allowedTypes)) {
-    die("Invalid image type.");
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    header("Location: create_post.php");
+    exit;
 }
 
+verify_csrf_token();
 
-    // Create a unique filename
-    $filename = uniqid() . "." . $extension;
+// The account ID and author name always come from the logged-in account.
+$userId = (int) $user["id"];
+$author = $user["name"];
+$brand = required_post_text("brand");
+$model = required_post_text("model");
+$content = required_post_text("content");
 
-    $imagePath = $uploadDir . $filename;
+require_once __DIR__ . "/post_images.php";
+$imagePath = save_post_image();
 
-    // Move uploaded file into kuvat folder
-    if (!move_uploaded_file($_FILES["image"]["tmp_name"], $imagePath)) {
-        die("Failed to upload image.");
-    }
-}
+$sql = "INSERT INTO posts (user_id, author, brand, model, content, image)
+        VALUES (?, ?, ?, ?, ?, ?)";
 
-// Insert post into database
-$sql = "INSERT INTO posts (author, brand, model, content, image)
-        VALUES (?, ?, ?, ?, ?)";
-
-$stmt = mysqli_prepare($mysqli, $sql);
-
-mysqli_stmt_bind_param(
-    $stmt,
-    "sssss",
-    $author,
-    $brand,
-    $model,
-    $content,
-    $imagePath
-);
-
-mysqli_stmt_execute($stmt);
-
-echo "Post uploaded successfully!";
+$stmt = $mysqli->prepare($sql);
+$stmt->bind_param("isssss", $userId, $author, $brand, $model, $content, $imagePath);
+$stmt->execute();
 
 header("Location: index.php");
-exit();
-
-?>
+exit;

@@ -1,5 +1,12 @@
+<?php
+
+require_once __DIR__ . "/auth.php";
+require_login();
+
+?>
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 
 <head>
     <meta charset="UTF-8">
@@ -19,7 +26,6 @@
 
 <?php
 
-include "database.php";
 include "header.php";
 
 ?>
@@ -32,13 +38,14 @@ include "header.php";
 
         <form action="upload.php" method="POST" enctype="multipart/form-data">
 
+            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
+
             <label for="author">Nimi</label>
             <input
                 type="text"
                 id="author"
-                name="author"
-                placeholder="..."
-                required
+                value="<?= htmlspecialchars($user["name"]) ?>"
+                readonly
             >
 
             <br><br>
@@ -69,7 +76,7 @@ include "header.php";
             <textarea
                 id="content"
                 name="content"
-                placeholder="Write your post..."
+                placeholder="Kirjoita julkaisu..."
                 required
             ></textarea>
 

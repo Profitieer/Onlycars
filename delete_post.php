@@ -1,5 +1,36 @@
+<?php
+
+require_once __DIR__ . "/auth.php";
+require_login();
+
+$userId = (int) $user["id"];
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    verify_csrf_token();
+}
+
+// Check ownership both when opening the page and when confirming deletion.
+$row = get_owned_post($mysqli, $userId);
+$id = (int) $row["id"];
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $stmt = $mysqli->prepare("DELETE FROM posts WHERE id = ? AND user_id = ?");
+    $stmt->bind_param("ii", $id, $userId);
+    $stmt->execute();
+
+    if ($stmt->affected_rows === 1) {
+        require_once __DIR__ . "/post_images.php";
+        remove_unused_post_image($mysqli, $row["image"]);
+    }
+
+    header("Location: index.php");
+    exit;
+}
+
+?>
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,18 +42,13 @@
 </head>
 <body>
 
-<?php
-
-$id = $_GET["id"];
-
-include "database.php";
-include "header.php";
-
-?>
+<?php include "header.php"; ?>
 
 <div id="post_delete_background">
 
 <form id="post_delete" method="POST">
+
+    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars(csrf_token()) ?>">
 
     <input
         id="delete_input"
@@ -42,59 +68,6 @@ include "header.php";
 </form>
 
 </div>
-
-<?php
-
-if ($_SERVER["REQUEST_METHOD"] == "POST")
-{
-    $id = $_POST["id"];
-
-    /*
-     * First get the image path from the database.
-     */
-    $sql = "SELECT image FROM posts WHERE id = ?";
-
-    $stmt = mysqli_prepare($mysqli, $sql);
-    mysqli_stmt_bind_param($stmt, "i", $id);
-    mysqli_stmt_execute($stmt);
-
-    $result = mysqli_stmt_get_result($stmt);
-    $row = mysqli_fetch_assoc($result);
-
-    $imagePath = $row["image"] ?? "";
-
-
-    /*
-     * Delete the post from the database.
-     */
-    $sql = "DELETE FROM posts WHERE id = ?";
-
-    $stmt = mysqli_prepare($mysqli, $sql);
-    mysqli_stmt_bind_param($stmt, "i", $id);
-
-    if (mysqli_stmt_execute($stmt))
-    {
-        /*
-         * Delete the image file from the server.
-         */
-        if (!empty($imagePath) && file_exists($imagePath))
-        {
-            unlink($imagePath);
-        }
-
-        echo "Julkaisu poistettiin onnistuneesti.";
-
-        echo "<script>
-                window.location.href = 'index.php';
-              </script>";
-    }
-    else
-    {
-        echo "Poistaminen epäonnistui.";
-    }
-}
-
-?>
 
 </body>
 </html>

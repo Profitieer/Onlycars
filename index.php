@@ -1,28 +1,6 @@
 <?php
 
-session_start();
-
-include "database.php";
-
-$user = null;
-
-// Check if user is logged in
-if (isset($_SESSION["user_id"])) {
-
-    $stmt = $mysqli->prepare(
-        "SELECT * FROM user WHERE id = ?"
-    );
-
-    $stmt->bind_param(
-        "i",
-        $_SESSION["user_id"]
-    );
-
-    $stmt->execute();
-
-    $user_result = $stmt->get_result();
-    $user = $user_result->fetch_assoc();
-}
+require_once __DIR__ . "/auth.php";
 
 // Get posts
 $sql = "SELECT * FROM posts ORDER BY created_at DESC";
@@ -36,7 +14,7 @@ if (!$result) {
 
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -50,31 +28,22 @@ if (!$result) {
 
 <?php if (isset($user)): ?>
 
-        <p>Hello <?= htmlspecialchars($user["name"]) ?></p>
+        <p>Hei <?= htmlspecialchars($user["name"]) ?></p>
 
-        <p><a href="logout.php">Log out</a></p>
+        <p><a href="logout.php">Kirjaudu ulos</a></p>
 
 <?php else: ?>
 
-        <p><a href="login.php">Log in</a> or <a href="signup.html">Sign up</a></p>
+        <p><a href="login.php">Kirjaudu sisään</a> tai <a href="signup.html">Luo tili</a></p>
     
 <?php endif; ?>
 
 
 
-<?php
+<?php include "header.php"; ?>
 
-include "header.php";
-
-
-// Check if there are any results
-if (mysqli_num_rows($result) > 0)
-{
-    // Output data of each row
-    while($row = mysqli_fetch_assoc($result))
-    {
-
-?>
+<?php if (mysqli_num_rows($result) > 0): ?>
+    <?php while ($row = mysqli_fetch_assoc($result)): ?>
 
 <!-- Display the data in a structured format -->
 <div class="backgroundposts">
@@ -100,7 +69,7 @@ if (mysqli_num_rows($result) > 0)
         <br><br>
 
 
-<?php if ($user !== null && $user["id"] == $row["user_id"]): ?>
+<?php if ($user !== null && $user["id"] == ($row["user_id"] ?? null)): ?>
     
         <a id="post_changes1"
            href="edit_product.php?id=<?php echo $row["id"]; ?>">
@@ -116,17 +85,10 @@ if (mysqli_num_rows($result) > 0)
 
     </div>
 </div>
-<?php
-
-    } // End of while loop
-}   else{
-    // If no results were found, display a message
-    echo "Tuotteita ei löytynyt.";
-        }
-
-
-?>
+    <?php endwhile; ?>
+<?php else: ?>
+    <p>Tuotteita ei löytynyt.</p>
+<?php endif; ?>
 
 </body>
 </html>
-
