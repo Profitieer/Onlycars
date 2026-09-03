@@ -1,16 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Signup</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+    <title>Tili luotu | OnlyCars</title>
+    <link rel="stylesheet" href="styles2.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single:wght@400;600&amp;family=Caveat:wght@400;700&amp;display=swap" rel="stylesheet">
 </head>
 <body>
-
-    <h1> Signup </h1>
-
-    <p>Signup successful. You can now <a href="login.php">Log in</a>.</p>
-
+    <a class="skip-link" href="#main">Siirry sisältöön</a>
+    <header class="site-header">
+        <div class="header-panel">
+            <a class="brand" href="index.php">OnlyCars</a>
+            <p class="tagline">Autot, tarinat ja yhteinen intohimo.</p>
+            <nav class="site-nav" aria-label="Päävalikko">
+                <a href="index.php">Etusivu</a>
+                <a href="login.php">Kirjaudu sisään</a>
+                <a href="signup.php">Luo tili</a>
+            </nav>
+        </div>
+    </header>
+    <main id="main" class="page-shell">
+        <section class="card form-card compact-card">
+            <h1>Tili luotu</h1>
+            <p>Tilin luomisen jälkeen voit kirjautua sisään.</p>
+            <a class="button" href="login.php">Kirjaudu sisään</a>
+        </section>
+    </main>
+    <footer class="site-footer">OnlyCars · Jaa oma autotarinasi.</footer>
 </body>
 </html>

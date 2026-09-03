@@ -1,224 +1,75 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Media</title>
-    <link href="styles2.css" rel="stylesheet" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single:wght@100..900&family=Caveat:wght@400..700&display=swap" rel="stylesheet">
-</head>
-<body>
-
-
 <?php
 
-include "database.php";
+require_once __DIR__ . "/auth.php";
+require_once __DIR__ . "/page.php";
+require_once __DIR__ . "/post_form.php";
+require_once __DIR__ . "/post_images.php";
 
-$id = $_GET["id"];
+$mysqli = require __DIR__ . "/database.php";
+$user = require_login($mysqli);
+$userId = (int) $user["id"];
 
-// Get existing post
-$sql = "SELECT * FROM posts WHERE id = ?";
-$stmt = mysqli_prepare($mysqli, $sql);
-mysqli_stmt_bind_param($stmt, "i", $id);
-mysqli_stmt_execute($stmt);
-
-$result = mysqli_stmt_get_result($stmt);
-$row = mysqli_fetch_assoc($result);
-
-include "header.php";
-
-?>
-
-<div id="edit_post_background">
-
-<form id="post_edit" method="post" enctype="multipart/form-data">
-
-<h1> Julkaisun Muokkaus </h1>
-
-    Nimi<input
-        class="author"
-        type="text"
-        name="author"
-        value="<?php echo htmlspecialchars($row["author"]); ?>"
-    >
-
-    <br><br>
-
-    Merkki<input
-        class="brand"
-        type="text"
-        name="brand"
-        value="<?php echo htmlspecialchars($row["brand"]); ?>"
-    >
-
-    <br><br>
-
-    Malli<input
-        class="model"
-        type="text"
-        name="model"
-        value="<?php echo htmlspecialchars($row["model"]); ?>"
-    >
-
-    <br><br>
-
-    Julkaisu<textarea
-        class="content"
-        name="content"
-    ><?php echo htmlspecialchars($row["content"]); ?></textarea>
-
-    <br><br>
-
-    <p>Nykyinen kuva:</p>
-
-    <?php if (!empty($row["image"])): ?>
-
-        <img
-            src="<?php echo htmlspecialchars($row["image"]); ?>"
-            alt="Nykyinen kuva"
-            width="auto"
-            height="200"
-        >
-
-    <?php else: ?>
-
-        <p>Ei kuvaa.</p>
-
-    <?php endif; ?>
-
-    <p>Vaihda kuva:</p>
-
-    <input
-        type="file"
-        name="image"
-        accept="image/*"
-    >
-
-    <input
-        type="hidden"
-        name="id"
-        value="<?php echo $row["id"]; ?>"
-    >
-
-    <br><br>
-
-    <input
-        class="submit"
-        type="submit"
-        value="Päivitä"
-        id="päivitä"
-    >
-
-</form>
-
-</div>
-
-<?php
-
-if ($_SERVER["REQUEST_METHOD"] == "POST")
-{
-    $id = $_POST["id"];
-    $author = trim($_POST["author"]);
-    $brand = trim($_POST["brand"]);
-    $model = trim($_POST["model"]);
-    $content = trim($_POST["content"]);
-
-    // Check required fields
-    if (empty($author) || empty($brand) || empty($model) || empty($content))
-    {
-        echo "Täytä kaikki kentät.";
-    }
-    else
-    {
-        /*
-         * Keep the existing image by default.
-         */
-        $imagePath = $row["image"];
-
-        /*
-         * Check if a new image was uploaded.
-         */
-        if (isset($_FILES["image"]) && $_FILES["image"]["error"] === UPLOAD_ERR_OK)
-        {
-            $uploadDir = "kuvat/";
-
-            if (!is_dir($uploadDir))
-            {
-                mkdir($uploadDir, 0755, true);
-            }
-
-            // Get file extension
-            $extension = strtolower(
-                pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION)
-            );
-
-            // Allowed extensions
-            $allowed = ["jpg", "jpeg", "png", "gif", "webp"];
-
-            if (!in_array($extension, $allowed))
-            {
-                die("Invalid image type.");
-            }
-
-            // Create new filename
-            $filename = uniqid("", true) . "." . $extension;
-
-            $newImagePath = $uploadDir . $filename;
-
-            // Move uploaded image
-            if (move_uploaded_file(
-                $_FILES["image"]["tmp_name"],
-                $newImagePath
-            ))
-            {
-                $imagePath = $newImagePath;
-            }
-            else
-            {
-                die("Failed to upload image.");
-            }
-        }
-
-        // Update post
-        $sql = "UPDATE posts
-                SET author = ?,
-                    brand = ?,
-                    model = ?,
-                    content = ?,
-                    image = ?
-                WHERE id = ?";
-
-        $stmt = mysqli_prepare($mysqli, $sql);
-
-        mysqli_stmt_bind_param(
-            $stmt,
-            "sssssi",
-            $author,
-            $brand,
-            $model,
-            $content,
-            $imagePath,
-            $id
-        );
-
-        if (mysqli_stmt_execute($stmt))
-        {
-            echo "Julkaisu päivitettiin onnistuneesti.";
-
-            echo "<script>
-                    window.location.href = 'index.php';
-                  </script>";
-        }
-        else
-        {
-            echo "Julkaisun päivittäminen epäonnistui.";
-        }
-    }
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    verify_csrf_token();
 }
 
+$row = get_owned_post($mysqli, $userId);
+$id = (int) $row["id"];
+$formKey = "edit_" . $id;
+$imagePath = $row["image"] ?? "";
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $values = [
+        "brand" => post_text("brand"),
+        "model" => post_text("model"),
+        "content" => post_text("content")
+    ];
+
+    try {
+        $brand = required_post_text("brand");
+        $model = required_post_text("model");
+        $content = required_post_text("content");
+        $imagePath = save_post_image($imagePath);
+
+        $stmt = $mysqli->prepare(
+            "UPDATE posts SET brand = ?, model = ?, content = ?, image = ? WHERE id = ? AND user_id = ?"
+        );
+        $stmt->bind_param("ssssii", $brand, $model, $content, $imagePath, $id, $userId);
+        $stmt->execute();
+    } catch (mysqli_sql_exception $error) {
+        if ($imagePath !== ($row["image"] ?? "")) {
+            discard_uploaded_image($imagePath);
+        }
+        $_SESSION["forms"][$formKey] = $values;
+        flash("Tallentaminen epäonnistui. Yritä uudelleen ja valitse kuva uudestaan.", "error");
+        redirect_to("edit_product.php?id=" . $id);
+    } catch (RuntimeException | InvalidArgumentException $error) {
+        $_SESSION["forms"][$formKey] = $values;
+        flash($error->getMessage() . " Valitse mahdollinen kuva uudelleen.", "error");
+        redirect_to("edit_product.php?id=" . $id);
+    }
+
+    if ($imagePath !== ($row["image"] ?? "")) {
+        if ($stmt->affected_rows > 0) {
+            remove_unused_post_image($mysqli, $row["image"]);
+        } else {
+            discard_uploaded_image($imagePath);
+        }
+    }
+
+    unset($_SESSION["forms"][$formKey]);
+    flash("Julkaisun muutokset tallennettiin.");
+    redirect_to("index.php");
+}
+
+$values = array_merge($row, take_form_values($formKey));
+render_page_start("Muokkaa julkaisua", $user);
 ?>
 
-</body>
-</html>
+<section class="card form-card">
+    <h1>Muokkaa julkaisua</h1>
+    <p class="intro">Päivitä autosi tiedot, tarina tai kuva.</p>
+    <?php render_post_form($values, $row["author"], $id, $imagePath); ?>
+</section>
+
+<?php render_page_end(); ?>

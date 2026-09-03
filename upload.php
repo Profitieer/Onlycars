@@ -1,79 +1,48 @@
-
 <?php
 
-session_start();
+require_once __DIR__ . "/auth.php";
+require_once __DIR__ . "/post_images.php";
 
-include "database.php";
+$mysqli = require __DIR__ . "/database.php";
+$user = require_login($mysqli);
 
-$author = $_POST["author"];
-$brand = $_POST["brand"];
-$model = $_POST["model"];
-$content = $_POST["content"];
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    redirect_to("create_post.php");
+}
 
+verify_csrf_token();
+
+$userId = (int) $user["id"];
+$author = $user["name"];
+$values = [
+    "brand" => post_text("brand"),
+    "model" => post_text("model"),
+    "content" => post_text("content")
+];
 $imagePath = "";
 
-if (isset($_FILES["image"]) && $_FILES["image"]["error"] === 0) {
+try {
+    $brand = required_post_text("brand");
+    $model = required_post_text("model");
+    $content = required_post_text("content");
+    $imagePath = save_post_image();
 
-    $uploadDir = "kuvat/";
-
-    // Make sure the folder exists
-    if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0755, true);
-    }
-
-    // Get file extension
-    $extension = strtolower(
-        pathinfo($_FILES["image"]["name"], PATHINFO_EXTENSION)
+    $stmt = $mysqli->prepare(
+        "INSERT INTO posts (user_id, author, brand, model, content, image) VALUES (?, ?, ?, ?, ?, ?)"
     );
-
-    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    $mime = finfo_file($finfo, $_FILES["image"]["tmp_name"]);
-    finfo_close($finfo);
-
-    $allowedTypes = [
-    "image/jpeg",
-    "image/png",
-    "image/gif",
-    "image/webp"
-    ];
-
-if (!in_array($mime, $allowedTypes)) {
-    die("Invalid image type.");
+    $stmt->bind_param("isssss", $userId, $author, $brand, $model, $content, $imagePath);
+    $stmt->execute();
+} catch (mysqli_sql_exception $error) {
+    discard_uploaded_image($imagePath);
+    $_SESSION["forms"]["create"] = $values;
+    flash("Tallentaminen epäonnistui. Yritä uudelleen ja valitse kuva uudestaan.", "error");
+    redirect_to("create_post.php");
+} catch (RuntimeException | InvalidArgumentException $error) {
+    $_SESSION["forms"]["create"] = $values;
+    flash($error->getMessage() . " Valitse mahdollinen kuva uudelleen.", "error");
+    redirect_to("create_post.php");
 }
 
-
-    // Create a unique filename
-    $filename = uniqid() . "." . $extension;
-
-    $imagePath = $uploadDir . $filename;
-
-    // Move uploaded file into kuvat folder
-    if (!move_uploaded_file($_FILES["image"]["tmp_name"], $imagePath)) {
-        die("Failed to upload image.");
-    }
-}
-
-// Insert post into database
-$sql = "INSERT INTO posts (author, brand, model, content, image)
-        VALUES (?, ?, ?, ?, ?)";
-
-$stmt = mysqli_prepare($mysqli, $sql);
-
-mysqli_stmt_bind_param(
-    $stmt,
-    "sssss",
-    $author,
-    $brand,
-    $model,
-    $content,
-    $imagePath
-);
-
-mysqli_stmt_execute($stmt);
-
-echo "Post uploaded successfully!";
-
-header("Location: index.php");
-exit();
-
-?>
+unset($_SESSION["forms"]["create"]);
+flash("Julkaisu lisättiin.");
+redirect_to("index.php");

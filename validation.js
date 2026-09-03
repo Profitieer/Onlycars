@@ -1,52 +1,24 @@
-const validation = new JustValidate("#signup");
+// Browser validation helps immediately; PHP validates every submission as well.
+const signupForm = document.getElementById("signup");
 
-validation
-    .addField("#name", [
-        { 
-            rule: "required" 
-        }
-    ])
+if (signupForm) {
+    const password = document.getElementById("password");
+    const confirmation = document.getElementById("password_confirmation");
 
-    .addField("#email", [
-        { 
-            rule: "required" 
-        }, 
-        { 
-            rule: "email"
-        },
-        {
-            validator: (value) => () => {
-                return fetch("validate-email.php?email=" +
-                encodeURIComponent(value))
-                    .then(function(response) {
-                        return response.json();
-                    })
-                    .then(function(json) {
-                        return json.available;
-                    });
-            },
-            errorMessage: "Email already taken"
-        }
-    ])
+    function validatePasswords() {
+        const containsLetterAndNumber = /[a-z]/i.test(password.value) && /[0-9]/.test(password.value);
+        password.setCustomValidity(
+            password.value && !containsLetterAndNumber
+                ? "Salasanassa pitää olla vähintään yksi kirjain ja yksi numero."
+                : ""
+        );
+        confirmation.setCustomValidity(
+            confirmation.value && confirmation.value !== password.value
+                ? "Salasanat eivät täsmää."
+                : ""
+        );
+    }
 
-    .addField("#password", [
-        { 
-            rule: "required" 
-        }, 
-        { 
-            rule: "password"
-        }
-    ])
-
-    .addField("#password_confirmation", [
-        { 
-            
-            validator: (value, fields) => {
-                return value === fields["#password"].elem.value;
-            },
-            errorMessage: "passwords should match"
-        }
-    ])
-    .onSuccess((event) => {
-        document.getElementById("signup").submit();
-    });
+    password.addEventListener("input", validatePasswords);
+    confirmation.addEventListener("input", validatePasswords);
+}

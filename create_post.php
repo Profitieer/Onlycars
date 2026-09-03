@@ -1,99 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>OnlyCars</title>
-
-    <link href="styles2.css" rel="stylesheet">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single:wght@100..900&family=Caveat:wght@400..700&display=swap" rel="stylesheet">
-</head>
-
-<body>
-
 <?php
 
-include "database.php";
-include "header.php";
+require_once __DIR__ . "/auth.php";
+require_once __DIR__ . "/page.php";
+require_once __DIR__ . "/post_form.php";
 
+$mysqli = require __DIR__ . "/database.php";
+$user = require_login($mysqli);
+$values = take_form_values("create");
+
+render_page_start("Luo julkaisu", $user, "create");
 ?>
 
-<div class="backgroundpostscreate">
+<section class="card form-card">
+    <h1>Luo julkaisu</h1>
+    <p class="intro">Jaa autosi ja sen tarina.</p>
+    <?php render_post_form($values, $user["name"]); ?>
+</section>
 
-    <div class="postcreate">
-
-        <h2>Luo julkaisu</h2>
-
-        <form action="upload.php" method="POST" enctype="multipart/form-data">
-
-            <label for="author">Nimi</label>
-            <input
-                type="text"
-                id="author"
-                name="author"
-                placeholder="..."
-                required
-            >
-
-            <br><br>
-
-            <label for="brand">Merkki</label>
-            <input
-                type="text"
-                id="brand"
-                name="brand"
-                placeholder="..."
-                required
-            >
-
-            <br><br>
-
-            <label for="model">Malli</label>
-            <input
-                type="text"
-                id="model"
-                name="model"
-                placeholder="..."
-                required
-            >
-
-            <br><br>
-
-            <label for="content">Julkaisu</label>
-            <textarea
-                id="content"
-                name="content"
-                placeholder="Write your post..."
-                required
-            ></textarea>
-
-            <br><br>
-
-            <label for="image">Kuva</label>
-            <input
-                type="file"
-                id="image"
-                name="image"
-                accept="image/jpeg, image/png, image/gif, image/webp"
-            >
-
-            <br><br>
-
-            <button id="submit" type="submit">
-                Julkaise
-            </button>
-
-        </form>
-
-    </div>
-
-</div>
-
-</body>
-</html>
+<?php render_page_end(); ?>

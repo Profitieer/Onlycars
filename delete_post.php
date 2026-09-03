@@ -1,100 +1,57 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Media</title>
-    <link href="styles2.css" rel="stylesheet" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single:wght@100..900&family=Caveat:wght@400..700&display=swap" rel="stylesheet">
-</head>
-<body>
-
 <?php
 
-$id = $_GET["id"];
+require_once __DIR__ . "/auth.php";
+require_once __DIR__ . "/page.php";
+require_once __DIR__ . "/post_images.php";
 
-include "database.php";
-include "header.php";
+$mysqli = require __DIR__ . "/database.php";
+$user = require_login($mysqli);
+$userId = (int) $user["id"];
 
-?>
-
-<div id="post_delete_background">
-
-<form id="post_delete" method="POST">
-
-    <input
-        id="delete_input"
-        type="hidden"
-        name="id"
-        value="<?php echo htmlspecialchars($id); ?>"
-    >
-
-    <p id="delete_p">
-        Haluatko varmasti poistaa julkaisun?
-    </p>
-
-    <button id="delete_submit" type="submit">
-        Poista
-    </button>
-
-</form>
-
-</div>
-
-<?php
-
-if ($_SERVER["REQUEST_METHOD"] == "POST")
-{
-    $id = $_POST["id"];
-
-    /*
-     * First get the image path from the database.
-     */
-    $sql = "SELECT image FROM posts WHERE id = ?";
-
-    $stmt = mysqli_prepare($mysqli, $sql);
-    mysqli_stmt_bind_param($stmt, "i", $id);
-    mysqli_stmt_execute($stmt);
-
-    $result = mysqli_stmt_get_result($stmt);
-    $row = mysqli_fetch_assoc($result);
-
-    $imagePath = $row["image"] ?? "";
-
-
-    /*
-     * Delete the post from the database.
-     */
-    $sql = "DELETE FROM posts WHERE id = ?";
-
-    $stmt = mysqli_prepare($mysqli, $sql);
-    mysqli_stmt_bind_param($stmt, "i", $id);
-
-    if (mysqli_stmt_execute($stmt))
-    {
-        /*
-         * Delete the image file from the server.
-         */
-        if (!empty($imagePath) && file_exists($imagePath))
-        {
-            unlink($imagePath);
-        }
-
-        echo "Julkaisu poistettiin onnistuneesti.";
-
-        echo "<script>
-                window.location.href = 'index.php';
-              </script>";
-    }
-    else
-    {
-        echo "Poistaminen epäonnistui.";
-    }
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    verify_csrf_token();
 }
 
+$row = get_owned_post($mysqli, $userId);
+$id = (int) $row["id"];
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    try {
+        $stmt = $mysqli->prepare("DELETE FROM posts WHERE id = ? AND user_id = ?");
+        $stmt->bind_param("ii", $id, $userId);
+        $stmt->execute();
+    } catch (mysqli_sql_exception $error) {
+        flash("Julkaisua ei voitu poistaa. Yritä uudelleen.", "error");
+        redirect_to("delete_post.php?id=" . $id);
+    }
+
+    if ($stmt->affected_rows === 1) {
+        remove_unused_post_image($mysqli, $row["image"]);
+        flash("Julkaisu poistettiin.");
+    } else {
+        flash("Julkaisua ei enää löytynyt.", "error");
+    }
+
+    redirect_to("index.php");
+}
+
+render_page_start("Poista julkaisu", $user);
 ?>
 
-</body>
-</html>
+<section class="card form-card compact-card">
+    <h1>Poista julkaisu</h1>
+    <p>Haluatko varmasti poistaa tämän julkaisun? Poistoa ei voi perua.</p>
+    <p class="car-name"><?= e($row["brand"] . " " . $row["model"]) ?></p>
+    <p class="post-content"><?= e($row["content"]) ?></p>
+
+    <form action="delete_post.php?id=<?= $id ?>" method="post">
+        <input type="hidden" name="csrf_token" value="<?= e(csrf_token()) ?>">
+        <input type="hidden" name="id" value="<?= $id ?>">
+        <div class="actions">
+            <button class="button button-danger" type="submit">Poista julkaisu</button>
+            <a class="button button-secondary" href="index.php">Peruuta</a>
+        </div>
+    </form>
+</section>
+
+<?php render_page_end(); ?>

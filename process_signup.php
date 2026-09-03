@@ -1,70 +1,56 @@
 <?php
 
-mysqli_report(MYSQLI_REPORT_OFF);
+require_once __DIR__ . "/auth.php";
 
-// Check if name is empty
-if (empty($_POST["name"])) {
-    die("Name is Required");
+if ($_SERVER["REQUEST_METHOD"] !== "POST") {
+    redirect_to("signup.php");
 }
 
-// Check if email is empty
-if ( ! filter_var($_POST["email"], FILTER_VALIDATE_EMAIL)) {
-    die("Valid email is required");
+verify_csrf_token();
+$next = safe_return_path($_POST["next"] ?? "index.php");
+$signupUrl = "signup.php?next=" . rawurlencode($next);
+$signupName = post_text("name");
+$signupEmail = post_text("email");
+$signupPassword = is_string($_POST["password"] ?? null) ? $_POST["password"] : "";
+$confirmation = is_string($_POST["password_confirmation"] ?? null) ? $_POST["password_confirmation"] : "";
+
+// Keep the name and email when validation fails. Never store passwords here.
+$_SESSION["forms"]["signup"] = ["name" => $signupName, "email" => $signupEmail];
+$errorMessage = "";
+
+if ($signupName === "") {
+    $errorMessage = "Nimi on pakollinen.";
+} elseif (!filter_var($signupEmail, FILTER_VALIDATE_EMAIL)) {
+    $errorMessage = "Anna kelvollinen sähköpostiosoite.";
+} elseif (strlen($signupPassword) < 8) {
+    $errorMessage = "Salasanassa pitää olla vähintään 8 merkkiä.";
+} elseif (!preg_match("/[a-z]/i", $signupPassword) || !preg_match("/[0-9]/", $signupPassword)) {
+    $errorMessage = "Salasanassa pitää olla vähintään yksi kirjain ja yksi numero.";
+} elseif ($signupPassword !== $confirmation) {
+    $errorMessage = "Salasanat eivät täsmää.";
 }
 
-// Check if password is atleast 8 characters
-if (strlen($_POST["password"]) < 8) {
-    die("Password must be atleast 8 characters");
+if ($errorMessage !== "") {
+    flash($errorMessage, "error");
+    redirect_to($signupUrl);
 }
 
-// Check if password has atleast one letter
-if ( ! preg_match("/[a-z]/i", $_POST["password"])) {
-    die("Password must contain atleast one letter");
+$signupPasswordHash = password_hash($signupPassword, PASSWORD_DEFAULT);
+
+try {
+    $mysqli = require __DIR__ . "/database.php";
+    $stmt = $mysqli->prepare("INSERT INTO user (name, email, password_hash) VALUES (?, ?, ?)");
+    $stmt->bind_param("sss", $signupName, $signupEmail, $signupPasswordHash);
+    $stmt->execute();
+} catch (mysqli_sql_exception $error) {
+    $message = (int) $error->getCode() === 1062
+        ? "Sähköpostiosoite on jo käytössä. Kirjaudu sisään tai käytä toista osoitetta."
+        : "Tilin luominen epäonnistui. Yritä myöhemmin uudelleen.";
+    flash($message, "error");
+    redirect_to($signupUrl);
 }
 
-// Check if password has atleast one number
-if ( ! preg_match("/[0-9]/i", $_POST["password"])) {
-    die("Password must contain atleast one number");
-}
-
-// Check if passwords match
-if ($_POST["password"] !== $_POST["password_confirmation"]) {
-    die("passwords must match");
-}
-
-
-$password_hash = password_hash($_POST["password"], PASSWORD_DEFAULT);
-
-$mysqli = require __DIR__ . "/database.php";
-
-$sql = "INSERT INTO user (name, email, password_hash)
-        VALUES (?, ?, ?)";
-
-$stmt = $mysqli->stmt_init();
-
-if ( ! $stmt->prepare($sql)) {
-    die("SQL error: " . $mysqli->error);
-}
-
-$stmt->bind_param("sss", 
-                  $_POST["name"], 
-                  $_POST["email"], 
-                  $password_hash);
-        
-if ($stmt->execute()) {
-
-    header("location: signup-success.html");
-    exit;
-
-} else {
-
-    if ($stmt->errno === 1062) {
-        die("email already taken");
-    } else {
-    die($mysqli->error . " " . $mysqli->errno);
-    }
-
-}
-
-print_r($_POST);
-var_dump($password_hash);
+unset($_SESSION["forms"]["signup"]);
+$_SESSION["forms"]["login"] = ["email" => $signupEmail];
+flash("Tili luotiin onnistuneesti. Voit nyt kirjautua sisään.");
+redirect_to("login.php?next=" . rawurlencode($next));

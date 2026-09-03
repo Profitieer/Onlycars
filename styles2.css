@@ -1,235 +1,169 @@
-* {
-    box-sizing: border-box;
-}
-html,body {
-    margin: 0;
-    padding: 0;
-}
-textarea {
-    resize: none;
+:root {
+    color-scheme: light;
+    --paper: #edede9;
+    --card: #d5bdaf;
+    --shadow: #e3d5ca;
+    --cream: #f5ebe0;
+    --ink: #302923;
+    --muted: #5e5148;
+    --accent: #584136;
 }
 
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body {
-    background-color: #EDEDE9;
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
 }
+button, input, textarea { font: inherit; }
+a { color: var(--accent); text-underline-offset: 0.2em; }
+a:hover { text-decoration-thickness: 2px; }
+button, a, input, textarea { -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid #1f5969; outline-offset: 4px; }
+img { display: block; max-width: 100%; height: auto; }
+h1, h2, h3, p { margin: 0 0 1rem; overflow-wrap: anywhere; }
+h1, h2 { font-family: "Caveat", cursive; line-height: 1.15; }
+h1 { font-size: clamp(2.2rem, 5vw, 3.3rem); }
+h2 { font-size: clamp(2rem, 4vw, 2.8rem); }
+.skip-link { position: absolute; top: -100px; left: 1rem; z-index: 2; }
+.skip-link:focus { top: 1rem; padding: 0.75rem; background: white; }
 
-header {
-    background-image: url(kuvat/medatsun-jdm-240z-52-3440x1440.jpg);
-    background-repeat: no-repeat;
-    width: 100%;
-    height: 500px;
-    background-size: cover;
-    background-position: center;
-}
-
-#navbar {
-    background-color: #f5ebe042;
-    width: 30%;
-    border-top-right-radius: 30px;
-    transform: translateY(200px);
-    height: 300px;
-    width: 700px;
-    box-shadow: 10px -10px 20px white;
-    outline: auto;
-    outline-color: #EDEDE9;
-    outline-style: solid;
-}
-
-#nav {
-    transform: translateY(20px);
-}
-
-#nav h1 {
-    font-size: 5em;
-    color:  white;
-    font-family: "Caveat", cursive;
-    transform: translateY(15px) translateX(170px);
-    text-shadow: 7px 7px #D5BDAF;
-}
-
-#list {
+/* The original car banner and beige palette are shared by every page. */
+.site-header {
+    min-height: 390px;
+    padding: 3rem max(1rem, calc((100% - 1080px) / 2));
     display: flex;
-    flex-direction: row;
-    gap: 60px;
+    align-items: flex-end;
+    background: linear-gradient(90deg, rgba(0,0,0,.48), rgba(0,0,0,.05)),
+        url("kuvat/medatsun-jdm-240z-52-3440x1440.jpg") center / cover no-repeat;
 }
-
-#list a {
-    text-decoration: none;
+.header-panel {
+    width: min(100%, 720px);
+    padding: 1.5rem 2rem;
+    background: rgba(41, 34, 29, .82);
+    border: 1px solid rgba(245, 235, 224, .65);
+    border-radius: 0 28px 0 28px;
+    box-shadow: 8px -8px 0 rgba(227, 213, 202, .24);
     color: white;
-    font-family: "Bitcount Prop Single", system-ui;
-    font-size: 1.5em;
-    padding: 10px;
-    width: 200px;
-    text-align: center;
-    text-shadow: 1px 1px 1px rgb(18, 17, 17);
-    border-radius: 20px;
-    transform: translateX(50px);
-    background-color: rgba(213, 189, 175, 0.295)
 }
-
-#list a:hover {
-    background-color: #D5BDAF;
-    transform: scale(1.1) translateX(50px);
-}
-
-.backgroundposts{
-    display: flex;
-    justify-self: center;
-    background-color: #D5BDAF;
-    width: 1000px;
-    justify-content: center;
-    margin-top: 20px;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 12px 12px 4px #E3D5CA;
-}
-
-.post h2 {
-    font-family: "Caveat", cursive;
-    font-size: 40px;
-    text-shadow: 2px 2px 1px #EDEDE9;
-}
-.post p {
-    font-family: "Bitcount Prop Single", system-ui;
-    font-size: 1.3em;
-    font-weight: bolder;
-    text-shadow: 2px 2px 1px #EDEDE9;
-}
-
-.post img {
-    border-radius: 10px;
-    height: 300px;
-    width: 600px;
-}
-
-.post a {
-    margin-right: 30px;
-    color: black;
+.brand {
+    display: inline-block;
+    color: white;
+    font: 700 clamp(3.6rem, 8vw, 5.5rem) / 1 "Caveat", cursive;
     text-decoration: none;
+    text-shadow: 3px 3px var(--accent);
 }
-.post a:hover {
-    text-decoration: underline;
-    color: rgb(54, 54, 54);
-}
-
-.backgroundpostscreate {
+.tagline { margin: 0.75rem 0 1.25rem; color: var(--cream); }
+.site-nav { display: flex; flex-wrap: wrap; gap: 0.65rem; align-items: stretch; }
+.site-nav a, .site-nav button {
+    min-height: 44px;
     display: flex;
-    justify-self: center;
     justify-content: center;
-    background-color: #D5BDAF;
-    width: 700px;
-    height: 700px;
-    margin-bottom: 30px;
-    margin-top: 20px;
-    padding: 20px;
+    align-items: center;
+    padding: 0.6rem 0.9rem;
+    border: 1px solid transparent;
     border-radius: 10px;
-    box-shadow: 12px 12px 4px #E3D5CA;
+    background: var(--cream);
+    color: var(--ink);
+    font: 600 1rem / 1.4 "Bitcount Prop Single", system-ui;
+    text-decoration: none;
+    cursor: pointer;
 }
+.site-nav a:hover, .site-nav button:hover, .site-nav [aria-current="page"] {
+    background: var(--card);
+    border-color: var(--cream);
+}
+.logout-form { margin: 0; display: flex; }
+.account-name { margin: 1rem 0 0; color: var(--cream); font-size: 0.9rem; }
 
-.postcreate input {
-    outline: none;
-    border: none;
-    padding: 10px;
-    transform: translateX(10px);
-    font-size: 1em;
+.page-shell { width: min(1080px, calc(100% - 2rem)); margin: 2rem auto 3rem; }
+.page-heading { display: flex; gap: 1rem; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.page-heading h1, .page-heading p { margin-bottom: 0.35rem; }
+.card {
+    min-width: 0;
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+    border-radius: 14px;
+    background: var(--card);
+    box-shadow: 7px 7px 0 var(--shadow);
+    margin-bottom: 1.5rem;
 }
-
-.postcreate textarea {
-    outline: none;
-    border: none;
-    height: 100px;
-    transform: translateY(10px) translateX(10px);
-    font-size: 1em;
+.form-card { max-width: 700px; margin-left: auto; margin-right: auto; }
+.compact-card { max-width: 560px; }
+.intro, .field-help, .post-date { color: var(--muted); }
+.post { max-width: 920px; margin-left: auto; margin-right: auto; }
+.post h2 { text-shadow: 1px 1px var(--paper); margin-bottom: .4rem; }
+.car-name { font: 600 1.25rem / 1.5 "Bitcount Prop Single", system-ui; }
+.post-image { width: 100%; max-height: 580px; object-fit: contain; background: var(--cream); border-radius: 10px; margin: 1.25rem 0; }
+.post-content { white-space: pre-wrap; overflow-wrap: anywhere; }
+.post-date { display: block; margin-bottom: 1rem; font-size: .9rem; }
+.form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.field { min-width: 0; margin-bottom: 1.2rem; }
+label { display: block; margin-bottom: .4rem; font-weight: 700; }
+input:not([type="hidden"]), textarea {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    border: 1px solid #8a7568;
+    border-radius: 8px;
+    background: #fffdfa;
+    color: var(--ink);
+    padding: .75rem;
+    font-size: 16px;
 }
-
-.postcreate {
-    font-family: "Bitcount Prop Single", system-ui;
-    font-size: 1.5em;
-    font-weight: bolder;
-}
-
-.postcreate #submit {
-    background-color: #D5BDAF;
-    border: none;
-    font-size: 1em;
-    padding: 10px;
-    padding: 15px;
-    font-family: "Bitcount Prop Single", system-ui;
-    font-weight: bold;
-}
-.postcreate #submit:hover {
-    background-color: #E3D5CA;
-    border-radius: 10px;
-    
-}
-
-#post_edit {
-    font-family: "Bitcount Prop Single", system-ui;
-    font-weight: bolder;
-    font-size: 1.1em;
-}
-#edit_post_background {
-    display: flex;
-    justify-self: center;
+input[readonly] { background: var(--cream); color: var(--muted); }
+textarea { min-height: 155px; resize: vertical; }
+input[type="file"] { padding: .5rem; }
+input::file-selector-button { max-width: 100%; margin-right: .6rem; padding: .5rem; border: 0; border-radius: 5px; background: var(--shadow); color: var(--ink); font: inherit; cursor: pointer; }
+.field-help { display: block; margin: .4rem 0 0; font-size: .9rem; }
+.current-image { width: 100%; max-height: 300px; object-fit: contain; border-radius: 8px; background: var(--cream); }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; margin-top: 1.25rem; }
+.button {
+    display: inline-flex;
+    align-items: center;
     justify-content: center;
-    background-color: #D5BDAF;
-    width: 700px;
-    height: 900px;
-    margin-bottom: 30px;
-    margin-top: 20px;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 12px 12px 4px #E3D5CA;
+    min-height: 46px;
+    padding: .75rem 1.2rem;
+    border: 1px solid var(--accent);
+    border-radius: 9px;
+    background: var(--accent);
+    color: white;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
 }
-#post_edit input {
-    outline: none;
-    border: none;
-    padding: 10px;
-    transform: translateX(10px);
-    font-size: 1em;
-}
-#post_edit textarea{
-    outline: none;
-    border: none;
-    height: 100px;
-    transform: translateY(10px) translateX(10px);
-    font-size: 1em;
-}
-#post_edit #päivitä {
-    background-color: #D5BDAF;
-    border: none;
-    font-size: 1.3em;
-    width: 100px;
-    padding: 15px;
-    font-family: "Bitcount Prop Single", system-ui;
-    font-weight: bold;
-}
-#post_edit #päivitä:hover {
-    background-color: #E3D5CA;
-    border-radius: 10px;
+.button:hover { background: #3e2d25; }
+.button-secondary { background: var(--cream); color: var(--ink); }
+.button-secondary:hover { background: white; }
+.button-danger { background: #832e2b; border-color: #832e2b; }
+.button-danger:hover { background: #64211e; }
+.form-footer { margin: 1.5rem 0 0; }
+.notice { max-width: 920px; margin: 0 auto 1.5rem; padding: 1rem 1.2rem; border: 1px solid; border-radius: 10px; overflow-wrap: anywhere; }
+.notice-success { background: #e7efe4; border-color: #6b8660; color: #294324; }
+.notice-error { background: #fae7df; border-color: #a35036; color: #72291c; }
+.site-footer { padding: 1.5rem 1rem; border-top: 1px solid var(--card); text-align: center; color: var(--muted); }
+
+@media (max-width: 600px) {
+    .site-header { min-height: 300px; padding: 1.5rem 1rem; }
+    .header-panel { padding: 1.2rem; border-radius: 0 20px 0 20px; box-shadow: 5px -5px 0 rgba(227,213,202,.24); }
+    .tagline { font-size: .9rem; }
+    .site-nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .site-nav a, .site-nav button { width: 100%; padding: .6rem .4rem; overflow-wrap: anywhere; }
+    .site-nav > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+    .page-shell { margin-top: 1.25rem; }
+    .page-heading { align-items: flex-start; flex-direction: column; }
+    .card { box-shadow: 4px 4px 0 var(--shadow); }
+    .form-grid { grid-template-columns: 1fr; gap: 0; }
+    .actions > .button { flex: 1 1 100%; }
+    .post-image { max-height: 380px; }
 }
 
-#post_delete_background {
-    background-color: #D5BDAF;
-    width: 500px;
-    padding: 10px;
-    border-radius: 10px;
-    margin-left: 10px;
-    margin-top: 10px;
-    font-family: "Bitcount Prop Single", system-ui;
-    font-weight: bold;
-    font-size: 1.4em;
-}
-#delete_submit {
-    background-color: #D5BDAF;
-    border: none;
-    font-size: 1em;
-    width: 100px;
-    padding: 15px;
-    font-family: "Bitcount Prop Single", system-ui;
-    font-weight: bold;
-}
-#delete_submit:hover {
-    background-color: #E3D5CA;
-    border-radius: 10px;
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
 }
